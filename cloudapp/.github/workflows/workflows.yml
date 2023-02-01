@@ -1,0 +1,30 @@
+name : Git Workflow
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  hello-world:
+    runs-on: ubuntu-latest
+    steps: 
+    - name: first step
+      run: echo Hi this working now!!!
+
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: repo checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 19
+      - name: mvn pkgs Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Run tests with Maven
+        run: mvn -B test --file pom.xml
