@@ -34,7 +34,9 @@ public class BasicAccessAuthenticationHandler {
                     .getHeader(HttpHeaders.AUTHORIZATION)
                     .substring("Basic".length())
                     .trim();
-
+            if(authorizationCredentials.isBlank()){
+                return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+            }
             // decoding credentials
             String[] decodedCredentials = new String(
                     Base64
@@ -44,21 +46,22 @@ public class BasicAccessAuthenticationHandler {
                 // user retrieving logic
                 Optional<User> userOptional = userDao.findByUsername(decodedCredentials[0]);
                 Optional<User> userById = userDao.findById(userId);
-                if(userById.get() == null){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(400));
-                }
-                if(userOptional.get() == null){
+                if(!userOptional.isPresent()){
                     return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+                }
+                if (!BCrypt.checkpw(decodedCredentials[1], userOptional.get().getPassword())){
+                    return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+                }
+                if(userById.isPresent() == false){
+                    return new ResponseEntity<>( HttpStatusCode.valueOf(403));
                 }
                 if(userById.get().getUsername() != userOptional.get().getUsername()){
                     return new ResponseEntity<>( HttpStatusCode.valueOf(403));
                 }
-                if (!BCrypt.checkpw(decodedCredentials[1], userById.get().getPassword())){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(401));
-                }
                 return null;
         } catch (Exception e) {
-            return new ResponseEntity<>( HttpStatusCode.valueOf(400));
+            // System.out.println(e.getMessage());
+            return new ResponseEntity<>( HttpStatusCode.valueOf(401));
         }
     }
 }
