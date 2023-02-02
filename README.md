@@ -13,7 +13,7 @@
     - Language : Java 19
     - Database : PostgreSQL
     - Framework : Springboot
-    - Packages Used : Maven, Bcrypt
+    - Packages Used : Maven, Bcrypt, JUnit, Mockito
   
 ## Dependencies
     - Database : Should have a schema in DB called as temp.
