@@ -64,5 +64,10 @@ class CloudappApplicationTests {
 		assertEquals("password", user.get().getPassword());
 
 	}
+	
+	@Test
+	public void fail(){
+		assertTrue(false);
+	}
 
 }
