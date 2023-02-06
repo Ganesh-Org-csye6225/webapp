@@ -8,6 +8,7 @@
     - Post User: used to fetch the user details
     - Put User: used to update the user details
     - healthz: used to test the website state
+    
 
 ## Tech_Stack
     - Language : Java 19
