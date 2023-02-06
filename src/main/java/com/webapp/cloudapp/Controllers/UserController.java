@@ -41,7 +41,7 @@ public class UserController {
 
     @GetMapping("healthz")
     public ResponseEntity<?> healthCheck(){
-        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(HttpStatusCode.valueOf(200))
     }    
 
     @GetMapping("/v1/user/{userId}")
