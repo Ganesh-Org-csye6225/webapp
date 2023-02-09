@@ -47,21 +47,52 @@ public class BasicAccessAuthenticationHandler {
                 Optional<User> userOptional = userDao.findByUsername(decodedCredentials[0]);
                 Optional<User> userById = userDao.findById(userId);
                 if(!userOptional.isPresent()){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+                    return new ResponseEntity<>(null,null, HttpStatusCode.valueOf(401));
                 }
                 if (!BCrypt.checkpw(decodedCredentials[1], userOptional.get().getPassword())){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+                    return new ResponseEntity<>(null,null, HttpStatusCode.valueOf(401));
                 }
                 if(userById.isPresent() == false){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(403));
+                    return new ResponseEntity<>( null,null,HttpStatusCode.valueOf(403));
                 }
                 if(userById.get().getUsername() != userOptional.get().getUsername()){
-                    return new ResponseEntity<>( HttpStatusCode.valueOf(403));
+                    return new ResponseEntity<>(null,null, HttpStatusCode.valueOf(403));
                 }
-                return null;
+                return new ResponseEntity<>(userOptional.get(),null, HttpStatusCode.valueOf(200));
         } catch (Exception e) {
             // System.out.println(e.getMessage());
             return new ResponseEntity<>( HttpStatusCode.valueOf(401));
+        }
+    }
+
+    public User getUser(NativeWebRequest nativeWebRequest)
+    {
+        try {
+            // retrieving credentials the HTTP Authorization Header
+            String authorizationCredentials = nativeWebRequest
+                    .getHeader(HttpHeaders.AUTHORIZATION)
+                    .substring("Basic".length())
+                    .trim();
+            if(authorizationCredentials.isBlank()){
+                return null;
+            }
+            // decoding credentials
+            String[] decodedCredentials = new String(
+                    Base64
+                            .getDecoder()
+                            .decode(authorizationCredentials)
+            ).split(":");
+                // user retrieving logic
+                Optional<User> userOptional = userDao.findByUsername(decodedCredentials[0]);
+                if(!userOptional.isPresent()){
+                    return null;
+                }
+                if (!BCrypt.checkpw(decodedCredentials[1], userOptional.get().getPassword())){
+                    return null;
+                }
+                return userOptional.get();
+        } catch (Exception e) {
+            return null;
         }
     }
 }
