@@ -21,7 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CloudappApplicationTests {
+class CloudappApplicationTest {
 
 	@Test
 	void contextLoads() {
