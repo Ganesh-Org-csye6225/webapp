@@ -27,7 +27,7 @@ import com.webapp.cloudapp.Util.Util;
 
 @RestController
 public class UserController {
-     @Autowired 
+    @Autowired 
     UserService userService;
 
     private final MapperClass mapperClass;
@@ -53,7 +53,7 @@ public class UserController {
         return new ResponseEntity<>( HttpStatusCode.valueOf(400));
     }
     ResponseEntity<?> auth = AuthenticateUser(userid, nativeWebRequest);
-    if(auth != null){
+    if(auth.getBody() == null){
         return auth; 
     } 
     Optional <User> optional = userService.getUser(userid);
@@ -92,6 +92,8 @@ public class UserController {
             return new ResponseEntity<>(mapperClass.userToUserDTO(dbUser), HttpStatusCode.valueOf(201));
         } catch (DataIntegrityViolationException e) {
             return new ResponseEntity<>( HttpStatusCode.valueOf(400));
+        } catch (Exception ex){
+            return new ResponseEntity<>( HttpStatusCode.valueOf(400));
         }
     }
 
@@ -105,9 +107,9 @@ public class UserController {
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         ResponseEntity<?> auth = AuthenticateUser(userid, nativeWebRequest);
-        if(auth != null){
+        if(auth.getBody() == null){
             return auth; 
-        }
+        } 
         Optional<User> optional = userService.getUser(userid);
         if(!optional.isPresent()){
             return new ResponseEntity<>( HttpStatusCode.valueOf(400));

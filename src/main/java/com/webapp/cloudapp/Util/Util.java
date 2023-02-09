@@ -13,7 +13,9 @@ public class Util {
 		return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
 	}
 
-    public static void check(){
+    public static boolean productQuantityCheck(int quantity){    
+        if(0 <= quantity && quantity <= 100) return true;
+        return false;
     }
     
 }
