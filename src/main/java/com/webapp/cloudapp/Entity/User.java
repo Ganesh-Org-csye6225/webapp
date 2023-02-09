@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import java.util.List;
 
 @Entity
-@Table(name = "user", schema = "temp")
+@Table(name = "user", schema = "public")
 public class User {
 
     @Id
