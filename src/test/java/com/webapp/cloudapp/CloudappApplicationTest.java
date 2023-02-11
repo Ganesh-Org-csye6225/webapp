@@ -53,7 +53,7 @@ class CloudappApplicationTest {
 		java.util.Optional<User> user = userService.getUser(1);
 
 		assertTrue(user.isPresent());
-		assertEquals("fname", user.get().getFirstName());
+		assertEquals("fame", user.get().getFirstName());
 		assertEquals("lname", user.get().getLastName());
 		assertEquals("user@gmail.com", user.get().getUsername());
 		assertEquals("password", user.get().getPassword());
