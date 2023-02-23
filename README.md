@@ -16,7 +16,7 @@
     - Packages Used : Maven, Bcrypt, JUnit, Mockito
   
 ## Dependencies
-    - Database : Should have a schema in DB called as temp.
+    - Database : Should have a schema in DB called as public.
 
 ### Personal Details
     - Name : Srinivasa Pavan Ganesh Vasa
