@@ -1,7 +1,7 @@
 variable "aws_access_key" {
   type    = string
   default = env("AWS_DEV_ACCESS_KEY")
-
+}
 
 variable "aws_region" {
   type    = string
