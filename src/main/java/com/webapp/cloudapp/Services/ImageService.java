@@ -43,7 +43,7 @@ public class ImageService {
 	@Autowired
 	private BasicAccessAuthenticationHandler authHandler;
 
-	// @Autowired
+	@Autowired
 	private AmazonS3 s3;
 
 	@Value("${aws.s3.bucket}")

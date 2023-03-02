@@ -86,4 +86,3 @@ secrets.yml
 *.tar.gz
 *.rar
 
-src/main/java/com/webapp/cloudapp/Util/S3Config.java
