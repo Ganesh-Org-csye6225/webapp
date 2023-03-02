@@ -110,7 +110,7 @@ public class ImageService {
 	}
 
 	private boolean isSupportedExtension(String extension) {
-		return extension != null && (extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg"));
+		return extension != null && (extension.equalsIgnoreCase("png") || extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg"));
 	}
 
 	public ResponseEntity<?> getAllImage(String productId,  NativeWebRequest nativeWebRequest) {
