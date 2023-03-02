@@ -225,8 +225,12 @@ public class ImageService {
 		}
 		Image image = imageOptional.get();
 		String url = image.getS3BucketPath();
-		String bucket = url.split("/")[0];
-		String filepath = url.split("/")[1] + "/" + url.split("/")[2];
+		System.out.println(url);
+		String[] spl = url.split("/");
+		String bucket = spl[2].split("\\.")[0];
+		System.out.println(bucket);
+		String filepath = spl[3] + "/" + spl[4];
+		System.out.println(filepath);
 		s3.deleteObject(bucket, filepath);
 		imageRepository.delete(image);
 		return new ResponseEntity<>(null, HttpStatusCode.valueOf(204));
