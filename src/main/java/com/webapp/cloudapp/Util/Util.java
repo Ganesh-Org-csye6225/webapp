@@ -17,5 +17,27 @@ public class Util {
         if(0 <= quantity && quantity <= 100) return true;
         return false;
     }
+
+    public static boolean isValidString(String str) {
+		try {
+			return ((str != null) && (!str.trim().equals("")));
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+    public static boolean isValidNumber(String str) {
+		try {
+			if (isValidString(str)) {
+				int p = Integer.parseInt(str.trim());
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+
+	}
     
 }
