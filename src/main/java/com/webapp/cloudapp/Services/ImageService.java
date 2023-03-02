@@ -59,6 +59,7 @@ public class ImageService {
 			}
 
 			if (Util.isValidNumber(productId) == false) {
+				System.out.println("type error");
 				return new ResponseEntity<>(null, HttpStatusCode.valueOf(400));
 			}
 
@@ -75,6 +76,7 @@ public class ImageService {
 			Product product = produOptional.get();
 			String extension = FilenameUtils.getExtension(multipartFile.getOriginalFilename());
 			if (!isSupportedExtension(extension)) {
+				System.out.println("extention error");
 				return new ResponseEntity<>(null, HttpStatusCode.valueOf(400));
 			}
 
@@ -92,6 +94,7 @@ public class ImageService {
 			try {
 				s3.putObject(bucket, filepath, fis, objectMetadata);
 			} catch (AmazonServiceException e) {
+				System.out.println("ase " + e.getLocalizedMessage());
 				return new ResponseEntity<>(null, HttpStatusCode.valueOf(400));
 			}
 			
@@ -101,6 +104,7 @@ public class ImageService {
 			return new ResponseEntity<>(convertToImageDto(new ArrayList<>(Arrays.asList(image))),
 					HttpStatusCode.valueOf(201));
 		} catch (Exception e) {
+			System.out.println("last " + e.getLocalizedMessage());
 			return new ResponseEntity<>(null, HttpStatusCode.valueOf(400));
 		}
 	}
