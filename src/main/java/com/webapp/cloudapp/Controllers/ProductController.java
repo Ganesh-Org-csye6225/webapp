@@ -3,6 +3,7 @@ package com.webapp.cloudapp.Controllers;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,8 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import com.webapp.cloudapp.Entity.Product;
+import com.webapp.cloudapp.Entity.Image;
 import com.webapp.cloudapp.Entity.User;
+import com.webapp.cloudapp.Repository.ImageRepository;
 import com.webapp.cloudapp.Services.ProductService;
+import com.webapp.cloudapp.Services.ImageService;
 import com.webapp.cloudapp.Util.BasicAccessAuthenticationHandler;
 import com.webapp.cloudapp.Util.Util;
 import com.webapp.cloudapp.Util.MapperClass;
@@ -32,6 +36,12 @@ public class ProductController {
 
     @Autowired
     BasicAccessAuthenticationHandler authHandler;
+
+	@Autowired
+	ImageRepository imageRepository;
+
+	@Autowired
+	ImageService imageService;
 
     @Autowired
     MapperClass mapperClass;
@@ -223,6 +233,10 @@ public class ProductController {
         }
 
         try {
+            List<Image> images = imageRepository.findAllByProductId(Integer.parseInt(productId));
+            for(Image img : images){
+                imageService.deleteImage(String.valueOf(img.getId()) , productId, nativeWebRequest);
+            }
             productService.deleteProduct(dbProduct.get());
             return new ResponseEntity<>(HttpStatusCode.valueOf(204));
         } catch (Exception e) {
