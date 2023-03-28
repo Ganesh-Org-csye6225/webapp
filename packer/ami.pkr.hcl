@@ -64,7 +64,9 @@ build {
 
   provisioner "file" {
     destination = "/tmp/"
+
     sources     = ["webservice.service", "cloudwatchagent_config.json"]
+
   }
 
   provisioner "shell" {
