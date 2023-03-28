@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import com.webapp.cloudapp.Entity.Product;
+import com.timgroup.statsd.StatsDClient;
 import com.webapp.cloudapp.Entity.Image;
 import com.webapp.cloudapp.Entity.User;
 import com.webapp.cloudapp.Repository.ImageRepository;
@@ -46,16 +49,25 @@ public class ProductController {
     @Autowired
     MapperClass mapperClass;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
+    Logger logger = LoggerFactory.getLogger(ProductController.class);
+
     @GetMapping("/v1/product/{productId}")
     public ResponseEntity<?> getProduct(@PathVariable String productId, NativeWebRequest nativeWebRequest) {
         Integer pId;
+        statsDClient.incrementCounter("get.productRequest.count");
+        logger.info("ProductController: Fetching product data...");
         try {
             pId = Integer.parseInt(productId);
         } catch (NumberFormatException ex) {
+            logger.error("ProductController: Invalid productId format", ex.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         Optional<Product> optional = productService.getProduct(pId);
         if (!optional.isPresent()) {
+            logger.error("ProductController: Product not found for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
         return new ResponseEntity<>(mapperClass.productToProductDto(optional.get()), HttpStatusCode.valueOf(200));
@@ -63,12 +75,17 @@ public class ProductController {
 
     @PostMapping("/v1/product")
     public ResponseEntity<?> addProduct(@RequestBody Map<String, Object> product, NativeWebRequest nativeWebRequest) {
+        statsDClient.incrementCounter("post.productRequest.count");
+        
         User user = authHandler.getUser(nativeWebRequest);
         if (user == null) {
+            logger.error("ProductController: User Authentication failed");
             return new ResponseEntity<>(HttpStatusCode.valueOf(401));
         }
+        logger.info("ProductController: Adding new product");
         LocalDateTime now = LocalDateTime.now();
         if (product.size() == 0) {
+            logger.error("ProductController: Missing product details");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
         try {
@@ -77,6 +94,7 @@ public class ProductController {
                     || !Util.isNullOrEmpty(product.get("manufacturer").toString())
                     || !Util.isNullOrEmpty(product.get("sku").toString())
                     || !Util.productQuantityCheck((int) product.get("quantity"))) {
+                logger.error("ProductController: Missing or Empty product details");
                 return new ResponseEntity<>(HttpStatusCode.valueOf(400));
             }
             int quantity = (int) (product.get("quantity"));
@@ -85,10 +103,13 @@ public class ProductController {
                     product.get("manufacturer").toString(), quantity, now.toString(), now.toString(), user);
 
             Product dbProduct = productService.addProduct(p);
+            logger.info("ProductController: Successfully created a new product");
             return new ResponseEntity<>(mapperClass.productToProductDto(dbProduct), HttpStatusCode.valueOf(201));
         } catch (DataIntegrityViolationException e) {
+            logger.error("ProductController: Error saving the product to DB", e.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         } catch (Exception e) {
+            logger.error("ProductController: Error while creating a new product",e.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
     }
@@ -96,21 +117,28 @@ public class ProductController {
     @PutMapping("v1/product/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable String productId, @RequestBody Map<String, Object> product,
             NativeWebRequest nativeWebRequest) {
+        statsDClient.incrementCounter("put.productRequest.count");
         Integer productid;
+        User user = authHandler.getUser(nativeWebRequest);
+        if (user == null) {
+            logger.error("ProductController: User Authentication failed");
+            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
+        }
+        logger.info("ProductController: Updating an existing product");
         try {
             productid = Integer.parseInt(productId);
         } catch (NumberFormatException ex) {
+            logger.error("ProductController: Invalid productId format", ex.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        User user = authHandler.getUser(nativeWebRequest);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
-        }
+        
         Optional<Product> dbProduct = productService.getProduct(productid);
         if (!dbProduct.isPresent()) {
+            logger.error("ProductController: Product not found for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
         if (dbProduct.get().getUser().getId() != user.getId()) {
+            logger.error("ProductController: User does not have access for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(403));
         }
 
@@ -137,6 +165,7 @@ public class ProductController {
                 check = true;
             }
             if (product.containsKey("quantity") && !Util.productQuantityCheck((int) product.get("quantity"))) {
+                logger.error("ProductController: Missing or Invalid format for product quantity");
                 return new ResponseEntity<>(HttpStatusCode.valueOf(400));
             } else if (product.containsKey("quantity")) {
                 dbProduct.get().setQuantity((int) (product.get("quantity")));
@@ -145,6 +174,7 @@ public class ProductController {
             }
 
             if (check) {
+                logger.error("ProductController: Missing product details");
                 return new ResponseEntity<>(HttpStatusCode.valueOf(400));
             }
 
@@ -152,10 +182,13 @@ public class ProductController {
             dbProduct.get().setDate_last_updated(now.toString());
 
             productService.addProduct(dbProduct.get());
+            logger.info("ProductController: Successfully updated product details");
             return new ResponseEntity<>(HttpStatusCode.valueOf(204));
         } catch (DataIntegrityViolationException e) {
+            logger.error("ProductController: Error saving updated product details in DB");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         } catch (Exception e) {
+            logger.error("ProductController: Error updating product details");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
     }
@@ -164,20 +197,27 @@ public class ProductController {
     public ResponseEntity<?> editProduct(@PathVariable String productId, @RequestBody Map<String, Object> product,
             NativeWebRequest nativeWebRequest) {
         Integer productid;
+        statsDClient.incrementCounter("patch.productRequest.count");
+        User user = authHandler.getUser(nativeWebRequest);
+        if (user == null) {
+            logger.error("ProductController: User Authentication failed");
+            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
+        }
+        logger.info("ProductController: Updating an existing product");
         try {
             productid = Integer.parseInt(productId);
         } catch (NumberFormatException ex) {
+            logger.error("ProductController: Invalid productId format", ex.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
-        User user = authHandler.getUser(nativeWebRequest);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
-        }
+       
         Optional<Product> dbProduct = productService.getProduct(productid);
         if (!dbProduct.isPresent()) {
+            logger.error("ProductController: Product not found for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
         if (dbProduct.get().getUser().getId() != user.getId()) {
+            logger.error("ProductController: User does not have access for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(403));
         }
         try {
@@ -195,6 +235,7 @@ public class ProductController {
                 dbProduct.get().setManufacturer(product.get("manufacturer").toString());
             }
             if (product.containsKey("quantity") && !Util.productQuantityCheck((int) product.get("quantity"))) {
+                logger.error("ProductController: Missing or Invalid format for product quantity");
                 return new ResponseEntity<>(HttpStatusCode.valueOf(400));
             } else if (product.containsKey("quantity")) {
                 dbProduct.get().setQuantity(((int) product.get("quantity")));
@@ -204,10 +245,13 @@ public class ProductController {
             dbProduct.get().setDate_last_updated(now.toString());
 
             productService.addProduct(dbProduct.get());
+            logger.info("ProductController: Successfully updated product details");
             return new ResponseEntity<>(HttpStatusCode.valueOf(204));
         } catch (DataIntegrityViolationException e) {
+            logger.error("ProductController: Error saving updated product details in DB");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         } catch (Exception e) {
+            logger.error("ProductController: Error updating product details");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
     }
@@ -215,20 +259,27 @@ public class ProductController {
     @DeleteMapping("v1/product/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable String productId, NativeWebRequest nativeWebRequest) {
         Integer productid;
+        
+        statsDClient.incrementCounter("delete.productRequest.count");
+        User user = authHandler.getUser(nativeWebRequest);
+        if (user == null) {
+            logger.error("ProductController: User Authentication failed");
+            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
+        }
+        logger.info("ProductController: Deleting a product");
         try {
             productid = Integer.parseInt(productId);
         } catch (NumberFormatException ex) {
+            logger.error("ProductController: Invalid productId format", ex.getLocalizedMessage());
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
-        }
-        User user = authHandler.getUser(nativeWebRequest);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatusCode.valueOf(401));
         }
         Optional<Product> dbProduct = productService.getProduct(productid);
         if (!dbProduct.isPresent()) {
+            logger.error("ProductController: Product not found for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(404));
         }
         if (dbProduct.get().getUser().getId() != user.getId()) {
+            logger.error("ProductController: User does not have access for the given productID");
             return new ResponseEntity<>(HttpStatusCode.valueOf(403));
         }
 
@@ -238,8 +289,10 @@ public class ProductController {
                 imageService.deleteImage(String.valueOf(img.getId()) , productId, nativeWebRequest);
             }
             productService.deleteProduct(dbProduct.get());
+            logger.info("ProductController: Successfully deleted a product");
             return new ResponseEntity<>(HttpStatusCode.valueOf(204));
         } catch (Exception e) {
+            logger.error("ProductController: Error deleting a product");
             return new ResponseEntity<>(HttpStatusCode.valueOf(400));
         }
     }
