@@ -3,7 +3,7 @@
 ## How to start the Project 
     - git clone 
 ## Project_Details
-    - Implementation of Crud Api's
+    - Implementation of Crud Api's 
     - Get User: used to fetch the user details
     - Post User: used to fetch the user details
     - Put User: used to update the user details
