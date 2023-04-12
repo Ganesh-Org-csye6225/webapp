@@ -5,7 +5,7 @@ env:
   CODEDEPLOY_APPLICATION_NAME: csye6225-webapp
   CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME: csye6225-webapp-deployment
 on:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
