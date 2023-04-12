@@ -42,3 +42,11 @@ jobs:
           cd packer
           packer init .
           packer validate .
+      
+      # - name: Create New Launch Template Version
+      #   run: |
+      #     aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --source-version $LATEST --auto-scale  | grep LaunchTemplateVersionId | awk '{print $2}' | tr -d '",'
+      # - name: Instance Refresh
+      #   run: |
+      #     aws autoscaling start-instance-refresh --auto-scaling-group-name autoscaling_group --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}'
+         
