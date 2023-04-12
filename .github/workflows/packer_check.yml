@@ -48,22 +48,15 @@ jobs:
           SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
           AWS_DEMO_ACCOUNT_ID: ${{ secrets.AWS_DEMO_ACCOUNT_ID }}
           TEMPLATE_ID: ${{ secrets.AWS_TEMPLATE_ID }}
-      - name: Get AMI ID
-        id: ami
-        run: |
-          ami_id=$(<command-to-get-ami-id> | grep -oE 'ami-[0-9a-f]{8,}')
-          echo "::set-output name=ami-id::$ami_id"
-        outputs:
-          ami-id: ${{ steps.ami.outputs.ami-id }}
-  instance_refresh:
-    runs-on: ubuntu-latest
-    needs: run_tests
-    steps:
+  
       - name: Authenticate AWS CLI
         run: aws configure set aws_access_key_id ${{ secrets.AWS_DEV_ACCESS_KEY }} && aws configure set aws_secret_access_key ${{ secrets.AWS_DEV_SECRET_KEY }} && aws configure set default.region ${{ secrets.AWS_SOURCE_AMI }}
-      - name: Create New Launch Template Version
+      - name: Create New Launch Template Version 
         run: |
-          aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --launch-template-data '{"ImageId":${{ steps.run_tests.outputs.ami-id }}}' --source-version 1  | grep LaunchTemplateVersionId | awk '{print $2}' | tr -d '",'
+          latestAmi=$(aws ec2 describe-images --filters "Name=owner-id,Values=094036824942" --query "sort_by(Images, &CreationDate)[-1].[ImageId]" --output "text")
+          echo "latest ami:"
+          echo $latestAmi
+          aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --launch-template-data "ImageId=$latestAmi" --source-version 1  | grep LaunchTemplateVersionId | awk '{print $2}' | tr -d '",'
         env:
           AWS_DEV_ACCESS_KEY: ${{ secrets.AWS_DEV_ACCESS_KEY }}
           AWS_DEV_SECRET_KEY: ${{ secrets.AWS_DEV_SECRET_KEY }}
