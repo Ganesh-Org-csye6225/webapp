@@ -42,4 +42,3 @@ jobs:
           cd packer
           packer init .
           packer validate .
-         
