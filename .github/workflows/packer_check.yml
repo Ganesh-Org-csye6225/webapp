@@ -40,19 +40,27 @@ jobs:
           packer init .
           packer validate .
           packer build -var aws_access_key=$AWS_DEV_ACCESS_KEY -var aws_secret_key=$AWS_DEV_SECRET_KEY -var subnet_id=$AWS_DEV_SUBNET_ID -var aws_region=$AWS_REGION ami.pkr.hcl
-      - name: Create a new Launch Template version
-        uses: andyhartnett/aws-create-launch-template-version@v1
-        with:
-          image_id: ${{ steps.build-and-deploy.outputs.ami_id }}
-          launch_template_id: ${{ secrets.AWS_TEMPLATE_ID }}
-          aws_access_key_id: ${{ secrets.AWS_DEV_ACCESS_KEY }}
-          aws_secret_access_key: ${{ secrets.AWS_DEV_SECRET_KEY }}
-          aws_region: ${{ secrets.AWS_REGION }}
-        # env:
-        #   AWS_DEV_ACCESS_KEY: ${{ secrets.AWS_DEV_ACCESS_KEY }}
-        #   AWS_DEV_SECRET_KEY: ${{ secrets.AWS_DEV_SECRET_KEY }}
-        #   AWS_DEV_SUBNET_ID: ${{ secrets.AWS_DEV_SUBNET_ID }}
-        #   AWS_REGION: ${{ secrets.AWS_REGION }}
-        #   SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
-        #   AWS_DEMO_ACCOUNT_ID: ${{ secrets.AWS_DEMO_ACCOUNT_ID }}
-        #   TEMPLATE_ID: ${{ secrets.AWS_TEMPLATE_ID }}
+         
+      - name: Create New Launch Template Version
+        run: |
+          aws ec2 create-launch-template-version --launch-template-id $TEMPLATE_ID --launch-template-data '{"ImageId":${{ steps.build-and-deploy.outputs.ami_id }}}' --source-version $LATEST --auto-scale  | grep LaunchTemplateVersionId | awk '{print $2}' | tr -d '",'
+      - name: Instance Refresh
+        run: |
+          aws autoscaling start-instance-refresh --auto-scaling-group-name autoscaling_group --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}'
+         
+      # - name: Create a new Launch Template version
+      #   uses: andyhartnett/aws-create-launch-template-version@v1
+      #   with:
+      #     image_id: ${{ steps.build-and-deploy.outputs.ami_id }}
+      #     launch_template_id: ${{ secrets.AWS_TEMPLATE_ID }}
+      #     aws_access_key_id: ${{ secrets.AWS_DEV_ACCESS_KEY }}
+      #     aws_secret_access_key: ${{ secrets.AWS_DEV_SECRET_KEY }}
+      #     aws_region: ${{ secrets.AWS_REGION }}
+        env:
+          AWS_DEV_ACCESS_KEY: ${{ secrets.AWS_DEV_ACCESS_KEY }}
+          AWS_DEV_SECRET_KEY: ${{ secrets.AWS_DEV_SECRET_KEY }}
+          AWS_DEV_SUBNET_ID: ${{ secrets.AWS_DEV_SUBNET_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
+          AWS_DEMO_ACCOUNT_ID: ${{ secrets.AWS_DEMO_ACCOUNT_ID }}
+          TEMPLATE_ID: ${{ secrets.AWS_TEMPLATE_ID }}
