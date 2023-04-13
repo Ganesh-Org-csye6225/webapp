@@ -50,7 +50,7 @@ jobs:
           TEMPLATE_ID: ${{ secrets.AWS_TEMPLATE_ID }}
   
       - name: Authenticate AWS CLI
-        run: aws configure set aws_access_key_id ${{ secrets.AWS_DEMO_ACCESS_KEY }} && aws configure set aws_secret_access_key ${{ secrets.AWS_DEMO_SECRET_KEY }} && aws configure set default.region ${{ secrets.AWS_SOURCE_AMI }}
+        run: aws configure set aws_access_key_id ${{ secrets.AWS_DEMO_ACCESS_KEY }} && aws configure set aws_secret_access_key ${{ secrets.AWS_DEMO_SECRET_KEY }} && aws configure set default.region ${{ secrets.AWS_REGION }}
       - name: Create New Launch Template Version 
         run: |
           latestAmi=$(aws ec2 describe-images --filters "Name=owner-id,Values=${{ secrets.AWS_DEV_ACCOUNT_ID }}" --query "sort_by(Images, &CreationDate)[-1].[ImageId]" --output "text")
