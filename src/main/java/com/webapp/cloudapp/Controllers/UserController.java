@@ -47,7 +47,7 @@ public class UserController {
     @Autowired
     BasicAccessAuthenticationHandler authHandler;
 
-    @GetMapping("healthy")
+    @GetMapping("health")
     public ResponseEntity<?> healthyCheck(){
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }  
