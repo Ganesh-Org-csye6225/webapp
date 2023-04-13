@@ -47,6 +47,11 @@ public class UserController {
     @Autowired
     BasicAccessAuthenticationHandler authHandler;
 
+    @GetMapping("healthy")
+    public ResponseEntity<?> healthyCheck(){
+        return new ResponseEntity<>(HttpStatusCode.valueOf(200));
+    }  
+
     @GetMapping("healthz")
     public ResponseEntity<?> healthCheck(){
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
