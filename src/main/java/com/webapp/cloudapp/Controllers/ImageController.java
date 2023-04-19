@@ -49,7 +49,7 @@ public class ImageController {
 		}
 	}
 
-	@GetMapping("/v1/product/{productId}/image/{imageId}")
+	@GetMapping("/v2/product/{productId}/image/{imageId}")
 	public ResponseEntity<?> getImage(@PathVariable String productId, @PathVariable String imageId,
     NativeWebRequest nativeWebRequest) {
 		statsDClient.incrementCounter("get.imageRequest.count");
@@ -65,7 +65,7 @@ public class ImageController {
 		}
 	}
 
-	@GetMapping("/v1/product/{productId}/image")
+	@GetMapping("/v2/product/{productId}/image")
 	public ResponseEntity<?> getAllImages(@PathVariable String productId,NativeWebRequest nativeWebRequest) {
 		statsDClient.incrementCounter("getAll.imageRequest.count");
 		logger.info("ImageController: Fetching all the images of a product");
@@ -80,7 +80,7 @@ public class ImageController {
 		}
 	}
 
-	@DeleteMapping("/v1/product/{productId}/image/{imageId}")
+	@DeleteMapping("/v2/product/{productId}/image/{imageId}")
 	public ResponseEntity<?> deleteImages(@PathVariable String productId, @PathVariable String imageId,
     NativeWebRequest nativeWebRequest) {
 		statsDClient.incrementCounter("delete.imageRequest.count");
