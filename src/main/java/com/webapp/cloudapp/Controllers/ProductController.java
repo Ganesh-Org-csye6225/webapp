@@ -54,7 +54,7 @@ public class ProductController {
 
     Logger logger = LoggerFactory.getLogger(ProductController.class);
 
-    @GetMapping("/v1/product/{productId}")
+    @GetMapping("/v2/product/{productId}")
     public ResponseEntity<?> getProduct(@PathVariable String productId, NativeWebRequest nativeWebRequest) {
         Integer pId;
         statsDClient.incrementCounter("get.productRequest.count");
@@ -73,7 +73,7 @@ public class ProductController {
         return new ResponseEntity<>(mapperClass.productToProductDto(optional.get()), HttpStatusCode.valueOf(200));
     }
 
-    @PostMapping("/v1/product")
+    @PostMapping("/v2/product")
     public ResponseEntity<?> addProduct(@RequestBody Map<String, Object> product, NativeWebRequest nativeWebRequest) {
         statsDClient.incrementCounter("post.productRequest.count");
         
@@ -114,7 +114,7 @@ public class ProductController {
         }
     }
 
-    @PutMapping("v1/product/{productId}")
+    @PutMapping("v2/product/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable String productId, @RequestBody Map<String, Object> product,
             NativeWebRequest nativeWebRequest) {
         statsDClient.incrementCounter("put.productRequest.count");
@@ -193,7 +193,7 @@ public class ProductController {
         }
     }
 
-    @PatchMapping("v1/product/{productId}")
+    @PatchMapping("v2/product/{productId}")
     public ResponseEntity<?> editProduct(@PathVariable String productId, @RequestBody Map<String, Object> product,
             NativeWebRequest nativeWebRequest) {
         Integer productid;
@@ -256,7 +256,7 @@ public class ProductController {
         }
     }
 
-    @DeleteMapping("v1/product/{productId}")
+    @DeleteMapping("v2/product/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable String productId, NativeWebRequest nativeWebRequest) {
         Integer productid;
         
