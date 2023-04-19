@@ -57,7 +57,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatusCode.valueOf(200));
     }    
 
-    @GetMapping("/v1/user/{userId}")
+    @GetMapping("/v2/user/{userId}")
     public ResponseEntity<?> getUser(@PathVariable String userId, NativeWebRequest nativeWebRequest ){
     Integer userid;
     statsDClient.incrementCounter("get.userRequest.count");
@@ -82,7 +82,7 @@ public class UserController {
     return new ResponseEntity<>(mapperClass.userToUserDTO(optional.get()), HttpStatusCode.valueOf(200));
     }
 
-    @PostMapping("/v1/user")
+    @PostMapping("/v2/user")
     public ResponseEntity<?> addUser(@RequestBody Map<String,String> user){
         statsDClient.incrementCounter("post.userRequest.count");
         logger.info("UserController: Adding new user");
@@ -125,7 +125,7 @@ public class UserController {
     }
 
 
-    @PutMapping("v1/user/{userId}")
+    @PutMapping("v2/user/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable String userId, @RequestBody Map<String,String> user, NativeWebRequest nativeWebRequest ){
         Integer userid;
         statsDClient.incrementCounter("put.userRequest.count");
